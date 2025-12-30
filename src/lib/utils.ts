@@ -44,24 +44,25 @@ export const getNext5Days = () => {
 
 export const getAvailableTimeSlots = () => {
   return [
-    "09:00",
-    "09:30",
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30",
-    "16:00",
-    "16:30",
+    "9 AM",
+    // "09:30",
+    "10 AM",
+    // "10:30",
+    "11 AM",
+    // "11:30",
+    "2 PM",
+    // "14:30",
+    "3 PM",
+    // "15:30",
+    "4 PM",
+    // "16:30",
+    "5 PM",
   ];
 };
 
 export const APPOINTMENT_TYPES = [
-  { id: "checkup", name: "Regular Checkup", duration: "60 min", price: "$120" },
-  { id: "cleaning", name: "Teeth Cleaning", duration: "45 min", price: "$90" },
-  { id: "consultation", name: "Consultation", duration: "30 min", price: "$75" },
-  { id: "emergency", name: "Emergency Visit", duration: "30 min", price: "$150" },
+  { id: "checkup", name: "Regular Checkup", duration: "60 min", price: "₹1200" },
+  { id: "cleaning", name: "Teeth Cleaning", duration: "45 min", price: "₹800" },
+  { id: "consultation", name: "Consultation", duration: "30 min", price: "₹400" },
+  { id: "emergency", name: "Emergency Visit", duration: "30 min", price: "₹1000" },
 ];

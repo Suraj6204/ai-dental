@@ -273,6 +273,16 @@ function VapiWidget() {
               ? "Call Ended"
               : "Start Call"}
           </span>
+
+          {/* if (callActive) {
+            label = "End Call";
+          } else if (connecting) {
+            label = "Connecting...";
+          } else if (callEnded) {
+            label = "Call Ended";
+          } else {
+            label = "Start Call";
+          } */}
         </Button>
       </div>
     </div>

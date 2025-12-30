@@ -59,7 +59,7 @@ function TimeSelectionStep({
               <Card
                 key={type.id}
                 className={`cursor-pointer transition-all hover:shadow-sm ${
-                  selectedType === type.id ? "ring-2 ring-primary" : ""
+                  selectedType === type.id ? "ring-2 ring-primary" : "" //onTypeChange(type.id) updates the selected state,
                 }`}
                 onClick={() => onTypeChange(type.id)}
               >
@@ -92,11 +92,12 @@ function TimeSelectionStep({
               >
                 <div className="text-center">
                   <div className="font-medium">
+                    {/* 2025-12-31 to Fri, Dec 31 */}
                     {new Date(date).toLocaleDateString("en-US", {
                       weekday: "short",
                       month: "short",
                       day: "numeric",
-                    })}
+                    })} 
                   </div>
                 </div>
               </Button>

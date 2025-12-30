@@ -6,11 +6,11 @@ import { CalendarIcon, ClockIcon, UserIcon } from "lucide-react";
 
 async function NextAppointment() {
   const appointments = await getUserAppointments();
-
   // filter for upcoming CONFIRMED appointments only (today or future)
+  //return today or future appointments and ignores past appointments
   const upcomingAppointments =
     appointments?.filter((appointment) => {
-      const appointmentDate = parseISO(appointment.date);
+      const appointmentDate = parseISO(appointment.date);  //2025-12-22T12:50:33.000Z -> Mon Dec 22 2025 18:20:33 GMT+0530
       const today = new Date();
       const isUpcoming = isSameDay(appointmentDate, today) || isAfter(appointmentDate, today);
       return isUpcoming && appointment.status === "CONFIRMED";

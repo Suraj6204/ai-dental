@@ -121,7 +121,7 @@ function AppointmentsPage() {
             onBack={() => setCurrentStep(1)}
             onContinue={() => setCurrentStep(3)}
             onDateChange={setSelectedDate}
-            onTimeChange={setSelectedTime}
+            onTimeChange={setSelectedTime} 
             onTypeChange={setSelectedType}
           />
         )}
@@ -155,7 +155,7 @@ function AppointmentsPage() {
 
       {/* SHOW EXISTING APPOINTMENTS FOR THE CURRENT USER */}
       {userAppointments.length > 0 && (
-        <div className="mb-8 max-w-7xl mx-auto px-6 py-8">
+        <div className="mb-8 max-w-7xl mx-auto px-6 py-8  ">
           <h2 className="text-xl font-semibold mb-4">Your Upcoming Appointments</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {userAppointments.map((appointment) => (

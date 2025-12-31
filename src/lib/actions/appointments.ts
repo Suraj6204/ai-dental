@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "../prisma";
 import { AppointmentStatus } from "@prisma/client";
+import { log } from "console";
 
 function transformAppointment(appointment: any) {
   return {
@@ -40,13 +41,13 @@ export async function getAppointments() {
 
 export async function getUserAppointments() {
   try {
-    // get authenticated user from Clerk
     const { userId } = await auth();
-    if (!userId) throw new Error("You must be logged in to view appointments");
+    if (!userId) throw new Error("You must be logged in");
 
-    // find user by clerkId from authenticated session
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
-    if (!user) throw new Error("User not found. Please ensure your account is properly set up.");
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+    if (!user) throw new Error("User not found");
 
     const appointments = await prisma.appointment.findMany({
       where: { userId: user.id },
@@ -57,7 +58,9 @@ export async function getUserAppointments() {
       orderBy: [{ date: "asc" }, { time: "asc" }],
     });
 
-    return appointments.map(transformAppointment);
+    return {
+      appointments: appointments.map(transformAppointment),
+    };
   } catch (error) {
     console.error("Error fetching user appointments:", error);
     throw new Error("Failed to fetch user appointments");

@@ -8,7 +8,7 @@ import TimeSelectionStep from "@/components/appointments/TimeSelectionStep";
 import Navbar from "@/components/Navbar";
 import { useBookAppointment, useUserAppointments } from "@/hooks/use-appointment";
 import { APPOINTMENT_TYPES } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -23,7 +23,59 @@ function AppointmentsPage() {
   const [bookedAppointment, setBookedAppointment] = useState<any>(null);
 
   const bookAppointmentMutation = useBookAppointment();
-  const { data: userAppointments = [] } = useUserAppointments();
+
+  const { data: { appointments = [] } = {} } = useUserAppointments();
+
+  const upcomingAppointments = appointments?.filter((appointment) => {
+    // if (appointment.status !== "CONFIRMED") return false;
+
+    const now = new Date();
+
+    // base date
+    const appointmentDate = parseISO(appointment.date);
+
+    // time: "10 AM", "2 PM", "10:30 AM"
+    const time = appointment.time;
+    const isPM = time.includes("PM");
+
+    const cleanedTime = time.replace(/ AM| PM/, "");
+    const [h, m = "00"] = cleanedTime.split(":");
+
+    let hours = parseInt(h, 10);
+    const minutes = parseInt(m, 10);
+
+    if (isPM && hours !== 12) hours += 12;
+    if (!isPM && hours === 12) hours = 0;
+
+    const appointmentDateTime = new Date(appointmentDate);
+    appointmentDateTime.setHours(hours, minutes, 0, 0);
+
+    return appointmentDateTime >= now;
+  }) || [];
+
+  const pastAppointments = appointments?.filter((appointment: { status: string; date: string; time: any; }) => {
+    // if (appointment.status !== "CONFIRMED") return false;
+
+    const now = new Date();
+    const appointmentDate = parseISO(appointment.date);
+
+    const time = appointment.time;
+    const isPM = time.includes("PM");
+
+    const cleanedTime = time.replace(/ AM| PM/, "");
+    const [h, m = "00"] = cleanedTime.split(":");
+
+    let hours = parseInt(h, 10);
+    const minutes = parseInt(m, 10);
+
+    if (isPM && hours !== 12) hours += 12;
+    if (!isPM && hours === 12) hours = 0;
+
+    const appointmentDateTime = new Date(appointmentDate);
+    appointmentDateTime.setHours(hours, minutes, 0, 0);
+
+    return appointmentDateTime < now;
+  }) || [];
 
   const handleSelectDentist = (dentistId: string) => {
     setSelectedDentistId(dentistId);
@@ -54,27 +106,27 @@ function AppointmentsPage() {
           // store the appointment details to show in the modal
           setBookedAppointment(appointment);
 
-          try {
-            const emailResponse = await fetch("/api/send-appointment-email", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                userEmail: appointment.patientEmail,
-                doctorName: appointment.doctorName,
-                appointmentDate: format(new Date(appointment.date), "EEEE, MMMM d, yyyy"),
-                appointmentTime: appointment.time,
-                appointmentType: appointmentType?.name,
-                duration: appointmentType?.duration,
-                price: appointmentType?.price,
-              }),
-            });
+          // try {
+          //   const emailResponse = await fetch("/api/send-appointment-email", {
+          //     method: "POST",
+          //     headers: {
+          //       "Content-Type": "application/json",
+          //     },
+          //     body: JSON.stringify({
+          //       userEmail: appointment.patientEmail,
+          //       doctorName: appointment.doctorName,
+          //       appointmentDate: format(new Date(appointment.date), "EEEE, MMMM d, yyyy"),
+          //       appointmentTime: appointment.time,
+          //       appointmentType: appointmentType?.name,
+          //       duration: appointmentType?.duration,
+          //       price: appointmentType?.price,
+          //     }),
+          //   });
 
-            if (!emailResponse.ok) console.error("Failed to send confirmation email");
-          } catch (error) {
-            console.error("Error sending confirmation email:", error);
-          }
+          //   if (!emailResponse.ok) console.error("Failed to send confirmation email");
+          // } catch (error) {
+          //   console.error("Error sending confirmation email:", error);
+          // }
 
           // show the success modal
           setShowConfirmationModal(true);
@@ -154,7 +206,7 @@ function AppointmentsPage() {
       )}
 
       {/* SHOW EXISTING APPOINTMENTS FOR THE CURRENT USER */}
-      {userAppointments.length > 0 && (
+      {/* {userAppointments.length > 0 && (
         <div className="mb-8 max-w-7xl mx-auto px-6 py-8  ">
           <h2 className="text-xl font-semibold mb-4">Your Upcoming Appointments</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -183,7 +235,77 @@ function AppointmentsPage() {
             ))}
           </div>
         </div>
+      )} */}
+
+
+      {upcomingAppointments.length > 0 && (
+        <div className="mb-2 max-w-7xl mx-auto px-6 py-6">
+          <h2 className="text-xl font-semibold mb-4">
+            Your Upcoming Appointments
+          </h2>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {upcomingAppointments.map((appointment) => (
+              <div key={appointment.id} className="bg-card border rounded-lg p-4 shadow-sm">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="size-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <img
+                      src={appointment.doctorImageUrl}
+                      alt={appointment.doctorName}
+                      className="size-10 rounded-full"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{appointment.doctorName}</p>
+                    <p className="text-muted-foreground text-xs">{appointment.reason}</p>
+                  </div>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <p className="text-muted-foreground">
+                    📅 {format(new Date(appointment.date), "MMM d, yyyy")}
+                  </p>
+                  <p className="text-muted-foreground">🕐 {appointment.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
+
+      {pastAppointments.length > 0 && (
+        <div className="mb-6 max-w-7xl mx-auto px-6 py-6">
+          <h2 className="text-xl font-semibold mb-4">
+            Your Past Appointments
+          </h2>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {pastAppointments.map((appointment) => (
+              <div key={appointment.id} className="bg-card border rounded-lg p-4 shadow-sm opacity-70">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="size-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <img
+                      src={appointment.doctorImageUrl}
+                      alt={appointment.doctorName}
+                      className="size-10 rounded-full"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{appointment.doctorName}</p>
+                    <p className="text-muted-foreground text-xs">{appointment.reason}</p>
+                  </div>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <p className="text-muted-foreground">
+                    📅 {format(new Date(appointment.date), "MMM d, yyyy")}
+                  </p>
+                  <p className="text-muted-foreground">🕐 {appointment.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
     </>
   );
 }

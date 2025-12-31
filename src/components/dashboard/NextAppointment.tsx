@@ -5,18 +5,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { CalendarIcon, ClockIcon, UserIcon } from "lucide-react";
 
 async function NextAppointment() {
-  const appointments = await getUserAppointments();
+  const { appointments } = await getUserAppointments();
   // filter for upcoming CONFIRMED appointments only (today or future)
   //return today or future appointments and ignores past appointments
-  const upcomingAppointments =
-    appointments?.filter((appointment) => {
+  const upcomingAppointments = appointments?.filter((appointment) => {
       const appointmentDate = parseISO(appointment.date);  //2025-12-22T12:50:33.000Z -> Mon Dec 22 2025 18:20:33 GMT+0530
+
+      const appointmentTime = appointment.time; // "10:30 AM"
+      const isPM = appointmentTime.includes("PM");
+      let hour = parseInt(appointmentTime.replace(/ AM| PM/, ""), 10);
+      if (isPM && hour !== 12) hour += 12;
+      if (!isPM && hour === 12) hour = 0;
+      const formattedTime = `${hour.toString().padStart(2, "0")}:00:00`; // "14:30:00"
+
+      const appointmentDateTime = new Date(`${appointment.date}T${formattedTime}`);
       const today = new Date();
-      const isUpcoming = isSameDay(appointmentDate, today) || isAfter(appointmentDate, today);
+      console.log("Comparing dates:", today, appointmentDateTime);
+      const isUpcoming = today <= appointmentDateTime;
       return isUpcoming && appointment.status === "CONFIRMED";
     }) || [];
 
-  // get the next appointment (earliest upcoming one)
   const nextAppointment = upcomingAppointments[0];
 
   if (!nextAppointment) return <NoNextAppointments />; // no appointments, return nothing
